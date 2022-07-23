@@ -1,5 +1,6 @@
-import {Text, View, StyleSheet, FlatList} from "react-native";
+import {View, StyleSheet, FlatList} from "react-native";
 import {Expense} from "./ListedExpenses";
+import ExpensesListItem from "./ExpensesListItem";
 
 type props = {
   expenses: Expense[]
@@ -7,11 +8,11 @@ type props = {
 
 function ExpensesList({expenses}: props) {
   return (
-    <View>
+    <View style={styles.container}>
       <FlatList
         data={expenses}
         keyExtractor={(item) => item.id.toString()}
-        renderItem={(itemData) => <Text>{itemData.item.description}</Text>}
+        renderItem={(itemData) => <ExpensesListItem expense={itemData.item} /> }
       />
     </View>
   );
@@ -20,4 +21,8 @@ function ExpensesList({expenses}: props) {
 export default ExpensesList;
 
 const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+
+  }
 });

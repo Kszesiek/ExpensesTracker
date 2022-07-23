@@ -57,7 +57,6 @@ function ListedExpenses({expenses, expensesPeriod}: props) {
       <ExpensesSummary expenses={expenses} periodName={expensesPeriod} />
       <ExpensesList expenses={expenses} />
     </View>
-
   );
 }
 
@@ -66,6 +65,7 @@ export default ListedExpenses;
 const styles = StyleSheet.create({
   container: {
     padding: 20,
+    paddingBottom: 0,
     backgroundColor: GlobalStyles.colors.primary700,
     flex: 1,
   }
