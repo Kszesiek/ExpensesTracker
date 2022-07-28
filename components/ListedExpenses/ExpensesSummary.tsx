@@ -1,6 +1,6 @@
 import {StyleSheet, Text, View} from "react-native";
-import {Expense} from "./ListedExpenses";
 import {GlobalStyles} from "../../constants/styles";
+import {Expense} from "../../store/expenses-context";
 
 type props = {
   expenses: Expense[]

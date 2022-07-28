@@ -1,8 +1,8 @@
 import {Pressable, StyleSheet, Text, View} from "react-native";
-import {Expense} from "./ListedExpenses";
 import {GlobalStyles} from "../../constants/styles";
 import {useNavigation} from "@react-navigation/native";
 import {NavigationProps} from "../../App";
+import {Expense} from "../../store/expenses-context";
 
 function ExpensesListItem({expense}: {expense: Expense}) {
   const navigation = useNavigation<NavigationProps>();

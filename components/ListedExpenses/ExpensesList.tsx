@@ -1,6 +1,6 @@
 import {View, StyleSheet, FlatList} from "react-native";
-import {Expense} from "./ListedExpenses";
 import ExpensesListItem from "./ExpensesListItem";
+import {Expense} from "../../store/expenses-context";
 
 type props = {
   expenses: Expense[]
