@@ -1,14 +1,16 @@
 import {StyleSheet, View} from "react-native";
 import {useRoute, useNavigation, RouteProp} from "@react-navigation/native";
 import {NavigationProps, StackParamList} from "../App";
-import {useLayoutEffect} from "react";
+import {useContext, useLayoutEffect} from "react";
 import IconButton from "../components/UI/IconButton";
 import {GlobalStyles} from "../constants/styles";
 import CustomButton from "../components/UI/CustomButton";
+import {ExpensesContext} from "../store/expenses-context";
 
 function ManageExpense() {
   const route = useRoute<RouteProp<StackParamList, "ManageExpense">>();
   const navigation = useNavigation<NavigationProps>();
+  const expensesContext = useContext(ExpensesContext);
 
   const expenseId = route.params?.expenseId;
   const isEditing = !!expenseId;
@@ -20,7 +22,7 @@ function ManageExpense() {
   }, [navigation, isEditing])
 
   function deleteExpensePressed() {
-
+    expensesContext.deleteExpense(expenseId);
     navigation.goBack();
   }
 
@@ -29,7 +31,11 @@ function ManageExpense() {
   }
 
   function addOrEditExpensePressed() {
-
+    if (isEditing) {
+      expensesContext.updateExpense(expenseId, {amount: 0, date: new Date(), description: 'dummy description'});
+    } else {
+      expensesContext.addExpense({amount: 0, date: new Date(), description: 'dummy description'});
+    }
     navigation.goBack();
   }
 
