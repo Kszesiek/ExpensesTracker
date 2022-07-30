@@ -4,8 +4,8 @@ import {NavigationProps, StackParamList} from "../App";
 import {useContext, useLayoutEffect} from "react";
 import IconButton from "../components/UI/IconButton";
 import {GlobalStyles} from "../constants/styles";
-import CustomButton from "../components/UI/CustomButton";
-import {ExpensesContext} from "../store/expenses-context";
+import {Expense, expensePrototype, ExpensesContext} from "../store/expenses-context";
+import ExpenseForm from "../components/ManageExpense/ExpenseForm";
 
 function ManageExpense() {
   const route = useRoute<RouteProp<StackParamList, "ManageExpense">>();
@@ -14,6 +14,7 @@ function ManageExpense() {
 
   const expenseId = route.params?.expenseId;
   const isEditing = !!expenseId;
+  const editedExpense = expensesContext.expenses.find((expense: Expense) => expense.id === expenseId);
 
   useLayoutEffect(() => {
     navigation.setOptions({
@@ -30,30 +31,28 @@ function ManageExpense() {
     navigation.goBack();
   }
 
-  function addOrEditExpensePressed() {
+  function submitPressed(expenseData: expensePrototype) {
     if (isEditing) {
-      expensesContext.updateExpense(expenseId, {amount: 0, date: new Date(), description: 'dummy description'});
+      expensesContext.updateExpense(expenseId, expenseData);
     } else {
-      expensesContext.addExpense({amount: 0, date: new Date(), description: 'dummy description'});
+      expensesContext.addExpense(expenseData);
     }
     navigation.goBack();
   }
 
   return <View style={styles.container}>
-    <View style={styles.buttons}>
-      <View>
-        <CustomButton mode="flat" style={styles.button} onPress={abortPressed}>Abort</CustomButton>
-      </View>
-      <View>
-        <CustomButton style={styles.button} onPress={addOrEditExpensePressed}>{isEditing ? 'Update' : 'Add'}</CustomButton>
-      </View>
-    </View>
-
+    <View style={{flex: 1}} />
+    <ExpenseForm
+      onCancel={abortPressed}
+      onSubmit={submitPressed}
+      submitButtonLabel={isEditing ? "Update" : "Add"}
+      initialExpenseData={isEditing ? editedExpense : undefined}
+    />
     {isEditing &&
       <View style={styles.deleteContainer}>
         <IconButton icon="trash" size={36} color={GlobalStyles.colors.error500} onPress={deleteExpensePressed} />
       </View>}
-
+    <View style={{flex: 3}} />
   </View>
 }
 
@@ -64,17 +63,7 @@ const styles = StyleSheet.create({
     flex: 1,
     padding: 24,
     backgroundColor: GlobalStyles.colors.primary800,
-    // alignItems: 'center',
     // justifyContent: 'center',
-  },
-  buttons: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  button: {
-    minWidth: 120,
-    marginHorizontal: 8,
   },
   deleteContainer: {
     marginTop: 16,

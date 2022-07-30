@@ -1,6 +1,6 @@
 import {createContext, useReducer} from "react";
 
-type expensePrototype = {
+export type expensePrototype = {
   description: string
   amount: number
   date: Date
