@@ -1,4 +1,4 @@
-import {View, StyleSheet} from "react-native";
+import {View, StyleSheet, Alert} from "react-native";
 import Input from "./Input";
 import {useState} from "react";
 import CustomButton from "../UI/CustomButton";
@@ -15,6 +15,24 @@ type propsType = {
   submitButtonLabel: string,
   onCancel: () => any,
   onSubmit: (expenseData: expensePrototype) => any,
+}
+
+function writeOutArray(stringsArray: string[]): string {
+  let output: string = ""
+  let ending: string = ""
+  if (stringsArray.length > 0) {
+    output += stringsArray.shift()
+  }
+  if (stringsArray.length > 0) {
+    ending = " and " + stringsArray.pop()
+  }
+  if (stringsArray.length > 0) {
+    stringsArray.forEach(item => {
+      output += ", " + item
+    })
+  }
+
+  return output + ending
 }
 
 function ExpenseForm({submitButtonLabel, onCancel, onSubmit, initialExpenseData}: propsType) {
@@ -34,6 +52,25 @@ function ExpenseForm({submitButtonLabel, onCancel, onSubmit, initialExpenseData}
   }
 
   function submitPressed() {
+    const amountIsValid: boolean = !isNaN(+inputValues.amount) && +inputValues.amount > 0;
+    const dateRegex = /^20(0[0-9]|1[0-9]|2[0-9])-(0[1-9]|1[0-2])-(0[1-9]|1\d|2\d|3[01])$/;
+    const dateIsValid: boolean = dateRegex.test(inputValues.date);  // && expenseData.date.toString() !== "Invalid date"
+    const descriptionIsValid: boolean = inputValues.description.trim().length > 0;
+
+    if (!amountIsValid || !dateIsValid || !descriptionIsValid) {
+      const wrongDataArray: string[] = []
+      if (!amountIsValid)
+        wrongDataArray.push("amount")
+      if (!dateIsValid)
+        wrongDataArray.push("date")
+      if (!descriptionIsValid)
+        wrongDataArray.push("description")
+      const wrongDataString: string = writeOutArray(wrongDataArray)
+
+      Alert.alert("Invalid values", `Some data seems incorrect. Please check the ${wrongDataString} and try again.`);
+      return;
+    }
+
     const expenseData = {
       amount: +inputValues.amount,
       date: new Date(inputValues.date),
