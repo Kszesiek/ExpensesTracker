@@ -3,11 +3,17 @@ import Input from "./Input";
 import {useState} from "react";
 import CustomButton from "../UI/CustomButton";
 import {expensePrototype} from "../../store/expenses-context";
+import {GlobalStyles} from "../../constants/styles";
+
+type ValidValuePair = {
+  value: string
+  isInvalid: boolean
+}
 
 type inputValuesType = {
-  amount: string,
-  date: string,
-  description: string,
+  amount: ValidValuePair,
+  date: ValidValuePair,
+  description: ValidValuePair,
 }
 
 type propsType = {
@@ -36,26 +42,52 @@ function writeOutArray(stringsArray: string[]): string {
 }
 
 function ExpenseForm({submitButtonLabel, onCancel, onSubmit, initialExpenseData}: propsType) {
-  const [inputValues, setInputValues]: [inputValuesType, Function] = useState({
-    amount: initialExpenseData ? initialExpenseData.amount.toFixed(2).toString() : "",
-    date: initialExpenseData ? initialExpenseData.date.toISOString().slice(0, 10) : "",
-    description: initialExpenseData ? initialExpenseData.description : "",
+  const [inputs, setInputs]: [inputValuesType, Function] = useState({
+    amount: {
+      value: initialExpenseData ? initialExpenseData.amount.toFixed(2).toString() : "",
+      isInvalid: false,
+    },
+    date: {
+      value: initialExpenseData ? initialExpenseData.date.toISOString().slice(0, 10) : "",
+      isInvalid: false,
+    },
+    description: {
+      value: initialExpenseData ? initialExpenseData.description : "",
+      isInvalid: false,
+    },
   })
 
-  function inputChangedHandler<InputParam extends keyof typeof inputValues>(inputIdentifier: InputParam, enteredValue: inputValuesType[InputParam]) {
-    setInputValues((currentInputValues: typeof inputValues) => {
+  function inputChangedHandler<InputParam extends keyof typeof inputs>(inputIdentifier: InputParam, enteredValue: inputValuesType[InputParam]["value"]) {
+    setInputs((currentInputValues: typeof inputs) => {
       return {
         ...currentInputValues,
-        [inputIdentifier]: enteredValue,
+        [inputIdentifier]: { value: enteredValue, isInvalid: false },
       }
     })
   }
 
   function submitPressed() {
-    const amountIsValid: boolean = !isNaN(+inputValues.amount) && +inputValues.amount > 0;
+    const amountIsValid: boolean = !isNaN(+inputs.amount.value) && +inputs.amount.value > 0;
     const dateRegex = /^20(0[0-9]|1[0-9]|2[0-9])-(0[1-9]|1[0-2])-(0[1-9]|1\d|2\d|3[01])$/;
-    const dateIsValid: boolean = dateRegex.test(inputValues.date);  // && expenseData.date.toString() !== "Invalid date"
-    const descriptionIsValid: boolean = inputValues.description.trim().length > 0;
+    const dateIsValid: boolean = dateRegex.test(inputs.date.value) && new Date(inputs.date.value).toString() !== "Invalid Date";
+    const descriptionIsValid: boolean = inputs.description.value.trim().length > 0;
+
+    setInputs((currentInputs: inputValuesType) => {
+      return {
+        amount: {
+          value: currentInputs.amount.value,
+          isInvalid: !amountIsValid,
+        },
+        date: {
+          value: currentInputs.date.value,
+          isInvalid: !dateIsValid,
+        },
+        description: {
+          value: currentInputs.description.value,
+          isInvalid: !descriptionIsValid,
+        },
+      };
+    });
 
     if (!amountIsValid || !dateIsValid || !descriptionIsValid) {
       const wrongDataArray: string[] = []
@@ -72,9 +104,9 @@ function ExpenseForm({submitButtonLabel, onCancel, onSubmit, initialExpenseData}
     }
 
     const expenseData = {
-      amount: +inputValues.amount,
-      date: new Date(inputValues.date),
-      description: inputValues.description,
+      amount: +inputs.amount.value,
+      date: new Date(inputs.date.value),
+      description: inputs.description.value,
     }
 
     onSubmit(expenseData);
@@ -83,23 +115,33 @@ function ExpenseForm({submitButtonLabel, onCancel, onSubmit, initialExpenseData}
   return (
     <View>
       <View style={styles.dateAmountRow}>
-        <Input label="Amount" style={styles.amountStyle}
-        textInputProps={{
-          keyboardType: 'decimal-pad',
-          onChangeText: inputChangedHandler.bind(null, "amount"),
-          value: inputValues.amount,
+        <Input
+          label="Amount"
+          style={styles.amountStyle}
+          isInvalid={inputs.amount.isInvalid}
+          // onErrorText="Please enter a positive number"
+          textInputProps={{
+            keyboardType: 'decimal-pad',
+            onChangeText: inputChangedHandler.bind(null, "amount"),
+            value: inputs.amount.value,
         }} />
         <Input label="Date"
-        textInputProps={{
-          placeholder: "YYYY-MM-DD",  // new Date().toLocaleDateString().replace(/\./g,  '-')
-          maxLength: 10,
-          onChangeText: inputChangedHandler.bind(null, "date"),
-          value: inputValues.date,
+          isInvalid={inputs.date.isInvalid}
+          // onErrorText="Please enter a date between 2000-01-01 and 2029-12-31 following template YYYY-MM-DD"
+          textInputProps={{
+            placeholder: "YYYY-MM-DD",
+            maxLength: 10,
+            onChangeText: inputChangedHandler.bind(null, "date"),
+            value: inputs.date.value,
         }} />
       </View>
-      <Input label="Description" textInputProps={{
+      <Input
+        label="Description"
+        isInvalid={inputs.description.isInvalid}
+        // onErrorText="Please enter a description containing under 4000 characters"
+        textInputProps={{
         multiline: true,
-        value: inputValues.description,
+        value: inputs.description.value,
         onChangeText: inputChangedHandler.bind(null, "description"),
         // autoCorrect: false,  // default is true
         // autoCapitalize: 'sentences',  // default is sentences
@@ -136,6 +178,10 @@ const styles = StyleSheet.create({
     minWidth: 120,
     marginHorizontal: 8,
   },
+  errorText: {
+    color: GlobalStyles.colors.error500,
+    margin: 8,
+  }
 });
 
 

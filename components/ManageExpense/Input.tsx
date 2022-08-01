@@ -4,19 +4,24 @@ import {GlobalStyles} from "../../constants/styles";
 type props = {
   label: string
   textInputProps?: TextInputProps
+  isInvalid: boolean
+  // onErrorText: string
   style?: ViewStyle
 }
 
-function Input({label, textInputProps, style}: props) {
+function Input({label, textInputProps, style, isInvalid}: props) {
   const inputStyle: TextStyle[] = [styles.input]
 
   if (textInputProps?.multiline) {
     inputStyle.push(styles.multilineInput);
   }
+  if (isInvalid) {
+    inputStyle.push(styles.invalidInput);
+  }
 
   return (
     <View style={[styles.container, style]}>
-      <Text style={styles.label}>{label}</Text>
+      <Text style={[styles.label, isInvalid && styles.invalidLabel]}>{label}</Text>
       <TextInput style={inputStyle} {...textInputProps} />
     </View>
   )
@@ -44,5 +49,11 @@ const styles = StyleSheet.create({
   multilineInput: {
     minHeight: 100,
     textAlignVertical: 'top',
+  },
+  invalidLabel: {
+    color: GlobalStyles.colors.error500,
+  },
+  invalidInput: {
+    backgroundColor: GlobalStyles.colors.error50
   },
 })
