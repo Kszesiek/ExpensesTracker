@@ -4,8 +4,9 @@ import {NavigationProps, StackParamList} from "../App";
 import {useContext, useLayoutEffect} from "react";
 import IconButton from "../components/UI/IconButton";
 import {GlobalStyles} from "../constants/styles";
-import {Expense, expensePrototype, ExpensesContext} from "../store/expenses-context";
+import {Expense, ExpensePrototype, ExpensesContext} from "../store/expenses-context";
 import ExpenseForm from "../components/ManageExpense/ExpenseForm";
+import {storeExpense} from "../utilities/http";
 
 function ManageExpense() {
   const route = useRoute<RouteProp<StackParamList, "ManageExpense">>();
@@ -31,10 +32,13 @@ function ManageExpense() {
     navigation.goBack();
   }
 
-  function submitPressed(expenseData: expensePrototype) {
+  function submitPressed(expenseData: ExpensePrototype) {
     if (isEditing) {
       expensesContext.updateExpense(expenseId, expenseData);
     } else {
+      console.log("sending request...")
+      storeExpense(expenseData);
+      console.log("request sent...")
       expensesContext.addExpense(expenseData);
     }
     navigation.goBack();

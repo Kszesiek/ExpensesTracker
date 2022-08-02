@@ -2,7 +2,7 @@ import {View, StyleSheet, Alert} from "react-native";
 import Input from "./Input";
 import {useState} from "react";
 import CustomButton from "../UI/CustomButton";
-import {expensePrototype} from "../../store/expenses-context";
+import {ExpensePrototype} from "../../store/expenses-context";
 import {GlobalStyles} from "../../constants/styles";
 
 type ValidValuePair = {
@@ -17,10 +17,10 @@ type inputValuesType = {
 }
 
 type propsType = {
-  initialExpenseData?: expensePrototype,
+  initialExpenseData?: ExpensePrototype,
   submitButtonLabel: string,
   onCancel: () => any,
-  onSubmit: (expenseData: expensePrototype) => any,
+  onSubmit: (expenseData: ExpensePrototype) => any,
 }
 
 function writeOutArray(stringsArray: string[]): string {

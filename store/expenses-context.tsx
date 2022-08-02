@@ -1,76 +1,48 @@
 import {createContext, useReducer} from "react";
 
-export type expensePrototype = {
+export type ExpensePrototype = {
   description: string
   amount: number
   date: Date
 }
 
 export type Expense = {
-  id: number
+  id: string
   description: string
   amount: number
   date: Date
 }
 
-const DUMMY_EXPENSES: Expense[] = [
-  {
-    id: 1,
-    description: "reflect",
-    amount: 182,
-    date: new Date("2022-07-21"),
-  }, {
-    id: 2,
-    description: "taxi",
-    amount: 232,
-    date: new Date("2022-07-17"),
-  }, {
-    id: 3,
-    description: "second",
-    amount: 381,
-    date: new Date("2022-06-11"),
-  }, {
-    id: 4,
-    description: "cheer",
-    amount: 655,
-    date: new Date("2021-01-02"),
-  }, {
-    id: 5,
-    description: "morning",
-    amount: 556,
-    date: new Date("2022-07-22"),
-  }, {
-    id: 6,
-    description: "spill",
-    amount: 859,
-    date: new Date("2022-02-30"),
-  },
-];
-
 export const ExpensesContext = createContext({
   expenses: [] as Expense[],
-  addExpense: ({}: expensePrototype) => {},
-  deleteExpense: (id: number) => {},
-  updateExpense: (id: number, {}: expensePrototype) => {},
+  addExpense: ({}: ExpensePrototype) => {},
+  setExpenses: (expenses: Expense[]) => {},
+  deleteExpense: (id: string) => {},
+  updateExpense: (id: string, {}: ExpensePrototype) => {},
 });
 
-type actionTypes = 'ADD' | 'UPDATE' | 'DELETE'
+type actionTypes = 'ADD' | "SET" | 'UPDATE' | 'DELETE'
 
 type payloadType = {
-  "ADD": { data: expensePrototype }
-  "UPDATE": { id: number, data: expensePrototype }
-  "DELETE": { id: number }
+  "ADD": { data: ExpensePrototype }
+  "SET": {expenses: Expense[] }
+  "UPDATE": { id: string, data: ExpensePrototype }
+  "DELETE": { id: string }
 }
 
 function expensesReducer<TAction extends actionTypes> (state: Expense[], action: { actionType: TAction, payload: payloadType[TAction] }) {
   if (action.actionType === 'ADD' && "data" in action.payload) {
-    const id = Date.now() - Math.random() * 1000000000000;
+    const id = (Date.now() - Math.random() * 1000000000000).toString();
     // // @ts-ignore
     return [{...action.payload.data, id: id} as Expense, ...state];
   }
 
+  if (action.actionType === "SET" && "expenses" in action.payload) {
+    return action.payload.expenses;
+  }
+
   if (action.actionType === 'UPDATE' && "data" in action.payload && "id" in action.payload) {
-    const id: number = action.payload.id;
+    const id: string = action.payload.id;
     // // @ts-ignore
     const expenseToModifyIndex = state.findIndex((expense: Expense) => expense.id === id);
     const expenseToModify = state[expenseToModifyIndex];
@@ -82,7 +54,7 @@ function expensesReducer<TAction extends actionTypes> (state: Expense[], action:
   }
 
   if (action.actionType === 'DELETE' && "id" in action.payload) {
-    const id: number = action.payload.id
+    const id: string = action.payload.id
     // // @ts-ignore
     return state.filter((expense) => expense.id !== id)
   }
@@ -91,23 +63,28 @@ function expensesReducer<TAction extends actionTypes> (state: Expense[], action:
 }
 
 function ExpensesContextProvider({children}: {children: any}) {
-  const [expensesState, dispatch] = useReducer(expensesReducer, DUMMY_EXPENSES);
+  const [expensesState, dispatch] = useReducer(expensesReducer, [] as Expense[]);
 
-  function addExpense(expenseData: expensePrototype) {
+  function addExpense(expenseData: ExpensePrototype) {
     dispatch({ actionType: 'ADD', payload: {data: expenseData} });
   }
 
-  function deleteExpense(id: number) {
+  function setExpenses(expenses: Expense[]) {
+    dispatch({actionType: 'SET', payload: {expenses: expenses} })
+  }
+
+  function deleteExpense(id: string) {
     dispatch({ actionType: 'DELETE', payload: {id: id} });
   }
 
-  function updateExpense(id: number, expenseData: expensePrototype) {
+  function updateExpense(id: string, expenseData: ExpensePrototype) {
     dispatch({ actionType: 'UPDATE', payload: {id: id, data: expenseData} });
   }
 
   const value = {
     expenses: expensesState,
     addExpense: addExpense,
+    setExpenses: setExpenses,
     deleteExpense: deleteExpense,
     updateExpense: updateExpense,
   }

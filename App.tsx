@@ -13,7 +13,7 @@ import ExpensesContextProvider from "./store/expenses-context";
 
 export type StackParamList = {
   "ExpensesOverview": undefined
-  "ManageExpense": { expenseId: number }
+  "ManageExpense": { expenseId: string }
 };
 export type NavigationProps = NativeStackNavigationProp<StackParamList>;
 
