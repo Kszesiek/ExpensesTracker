@@ -2,16 +2,15 @@ import axios from "axios";
 import {Expense, ExpensePrototype} from "../store/expenses-context";
 import server from "../constants/backend";
 
-export function storeExpense(expenseData: ExpensePrototype) {
-  axios.post(
+export async function storeExpense (expenseData: ExpensePrototype) {
+  const response = await axios.post(
     server.url + "/expenses.json",
-    expenseData,
-  ).then(r => {
-    console.log("Succeeded!")
-  });
+    expenseData
+  );
+  return response.data.name;  // id of newly added expense
 }
 
-export async function fetchExpenses() {
+export async function fetchExpenses () {
   const response = await axios.get(
     server.url + "/expenses.json",
   )
@@ -31,4 +30,17 @@ export async function fetchExpenses() {
   }
 
   return expenses;
+}
+
+export function updateExpense (id: string, expenseData: ExpensePrototype) {
+  return axios.put(
+    server.url + `/expenses/${id}.json`,
+    expenseData
+    )
+}
+
+export function deleteExpense (id: string) {
+ return axios.delete(
+   server.url + `/expenses/${id}.json`
+ )
 }

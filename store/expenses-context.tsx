@@ -15,7 +15,7 @@ export type Expense = {
 
 export const ExpensesContext = createContext({
   expenses: [] as Expense[],
-  addExpense: ({}: ExpensePrototype) => {},
+  addExpense: ({}: Expense) => {},
   setExpenses: (expenses: Expense[]) => {},
   deleteExpense: (id: string) => {},
   updateExpense: (id: string, {}: ExpensePrototype) => {},
@@ -32,9 +32,8 @@ type payloadType = {
 
 function expensesReducer<TAction extends actionTypes> (state: Expense[], action: { actionType: TAction, payload: payloadType[TAction] }) {
   if (action.actionType === 'ADD' && "data" in action.payload) {
-    const id = (Date.now() - Math.random() * 1000000000000).toString();
     // // @ts-ignore
-    return [{...action.payload.data, id: id} as Expense, ...state];
+    return [{...action.payload.data} as Expense, ...state];
   }
 
   if (action.actionType === "SET" && "expenses" in action.payload) {

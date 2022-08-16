@@ -6,7 +6,7 @@ import IconButton from "../components/UI/IconButton";
 import {GlobalStyles} from "../constants/styles";
 import {Expense, ExpensePrototype, ExpensesContext} from "../store/expenses-context";
 import ExpenseForm from "../components/ManageExpense/ExpenseForm";
-import {storeExpense} from "../utilities/http";
+import {deleteExpense, storeExpense, updateExpense} from "../utilities/http";
 
 function ManageExpense() {
   const route = useRoute<RouteProp<StackParamList, "ManageExpense">>();
@@ -23,7 +23,8 @@ function ManageExpense() {
     });
   }, [navigation, isEditing])
 
-  function deleteExpensePressed() {
+  async function deleteExpensePressed() {
+    await deleteExpense(expenseId);
     expensesContext.deleteExpense(expenseId);
     navigation.goBack();
   }
@@ -32,14 +33,13 @@ function ManageExpense() {
     navigation.goBack();
   }
 
-  function submitPressed(expenseData: ExpensePrototype) {
+  async function submitPressed(expenseData: ExpensePrototype) {
     if (isEditing) {
+      await updateExpense(expenseId, expenseData);
       expensesContext.updateExpense(expenseId, expenseData);
     } else {
-      console.log("sending request...")
-      storeExpense(expenseData);
-      console.log("request sent...")
-      expensesContext.addExpense(expenseData);
+      const id = await storeExpense(expenseData);
+      expensesContext.addExpense({...expenseData, id: id});
     }
     navigation.goBack();
   }
