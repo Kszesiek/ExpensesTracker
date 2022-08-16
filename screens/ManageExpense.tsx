@@ -1,14 +1,18 @@
 import {StyleSheet, View} from "react-native";
 import {useRoute, useNavigation, RouteProp} from "@react-navigation/native";
 import {NavigationProps, StackParamList} from "../App";
-import {useContext, useLayoutEffect} from "react";
+import {useContext, useLayoutEffect, useState} from "react";
 import IconButton from "../components/UI/IconButton";
 import {GlobalStyles} from "../constants/styles";
 import {Expense, ExpensePrototype, ExpensesContext} from "../store/expenses-context";
 import ExpenseForm from "../components/ManageExpense/ExpenseForm";
 import {deleteExpense, storeExpense, updateExpense} from "../utilities/http";
+import LoadingOverlay from "../components/UI/LoadingOverlay";
+import ErrorOverlay from "../components/UI/ErrorOverlay";
 
 function ManageExpense() {
+  const [awaitingForResponse, setAwaitingForResponse]: [boolean, Function] = useState(false);
+  const [errorOccured, setErrorOccured]: [boolean, Function] = useState(false);
   const route = useRoute<RouteProp<StackParamList, "ManageExpense">>();
   const navigation = useNavigation<NavigationProps>();
   const expensesContext = useContext(ExpensesContext);
@@ -24,9 +28,16 @@ function ManageExpense() {
   }, [navigation, isEditing])
 
   async function deleteExpensePressed() {
-    await deleteExpense(expenseId);
-    expensesContext.deleteExpense(expenseId);
-    navigation.goBack();
+    setAwaitingForResponse(true);
+    try {
+      await deleteExpense(expenseId);
+      expensesContext.deleteExpense(expenseId);
+      setAwaitingForResponse(false);
+      navigation.goBack();
+    } catch (error) {
+      setAwaitingForResponse(false);
+      setErrorOccured(true);
+    }
   }
 
   function abortPressed() {
@@ -34,14 +45,33 @@ function ManageExpense() {
   }
 
   async function submitPressed(expenseData: ExpensePrototype) {
-    if (isEditing) {
-      await updateExpense(expenseId, expenseData);
-      expensesContext.updateExpense(expenseId, expenseData);
-    } else {
-      const id = await storeExpense(expenseData);
-      expensesContext.addExpense({...expenseData, id: id});
+    setAwaitingForResponse(true);
+    try {
+      if (isEditing) {
+        await updateExpense(expenseId, expenseData);
+        expensesContext.updateExpense(expenseId, expenseData);
+      } else {
+        const id = await storeExpense(expenseData);
+        expensesContext.addExpense({...expenseData, id: id});
+      }
+      setAwaitingForResponse(false);
+      navigation.goBack();
+    } catch (error) {
+      setAwaitingForResponse(false);
+      setErrorOccured(true);
     }
-    navigation.goBack();
+  }
+
+  function errorHandler() {
+    setErrorOccured(false);
+  }
+
+  if (awaitingForResponse) {
+    return <LoadingOverlay />
+  }
+
+  if (errorOccured && !awaitingForResponse) {
+    return <ErrorOverlay message="Request has been rejected." onConfirm={errorHandler} />
   }
 
   return <View style={styles.container}>
