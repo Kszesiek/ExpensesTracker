@@ -37,7 +37,11 @@ function expensesReducer<TAction extends actionTypes> (state: Expense[], action:
   }
 
   if (action.actionType === "SET" && "expenses" in action.payload) {
-    return action.payload.expenses;
+    function dateComparison(a: {date: Date}, b: {date: Date}) {
+      return b.date.getTime() - a.date.getTime();
+    }
+
+    return action.payload.expenses.sort(dateComparison);
   }
 
   if (action.actionType === 'UPDATE' && "data" in action.payload && "id" in action.payload) {
